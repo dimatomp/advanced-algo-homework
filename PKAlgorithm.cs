@@ -45,7 +45,7 @@ namespace DynamicTopoSort
                 Dfs(next, visited, edges, fromIndex, toIndex);
         }
 
-        public static IList<Node> InitGraph(int nVertices) 
+        public static List<Node> InitGraph(int nVertices) 
         {
             return Enumerable.Range(0, nVertices).Select(i => new Node {Number = i, Index = i}).ToList();
         }

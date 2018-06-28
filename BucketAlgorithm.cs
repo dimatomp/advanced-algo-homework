@@ -107,8 +107,11 @@ namespace DynamicTopoSort
             if (!oldBuckets.ContainsKey(cur))
                 oldBuckets[cur] = (cur.SAncestors.Count, cur.SDescendants.Count);
             sSet.Add(cur);
-            if (cur.IsS)
+            if (cur.IsS) {
+                if (!oldBuckets.ContainsKey(sNode))
+                    oldBuckets[sNode] = (sNode.SAncestors.Count, sNode.SDescendants.Count);
                 sSSet.Add(cur);
+            }
             oppSet(cur).Add(sNode);
             foreach (var next in edges(cur))
                 DfsDist(next, sNode, visited, edges, sSet, sSSet, oppSet, oldBuckets);
@@ -130,7 +133,7 @@ namespace DynamicTopoSort
 
                 if (sNode.Descendants.Contains(from))
                 {
-                    DfsDist(to, sNode, result.Visited, n => n.Outgoing, sNode.Descendants, sNode.SDescendants, n => n.Ancestors, result.OldBuckets);
+                    DfsDist(to, sNode, result.Visited, n => n.Outgoing, sNode.Descendants, sNode.SDescendants, n => n.SAncestors, result.OldBuckets);
                     result.Visited.Clear();
                 }
             }

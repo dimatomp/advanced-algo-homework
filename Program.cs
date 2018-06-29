@@ -9,16 +9,18 @@ namespace DynamicTopoSort
 {
     class Program
     {
-        static void GenTests()
+        private const int V = 40;
+
+        static void GenTests(Func<int, IEnumerable<(int, int)>> testGen)
         {
             //var tasks = new List<Task>();
-            for (int q = 1; q <= 100; q++)
+            for (int q = 1; q <= V; q++)
             {
                 var i = q;
                 //tasks.Add(Task.Run(() =>
                 //{
                     var n = i * 10;
-                    var edges = TestGen.GenerateTest(n).ToList();
+                    var edges = testGen(n).ToList();
                     using (var writer = new StreamWriter(new BufferedStream(new FileStream($"{i - 1:D2}.in", FileMode.Create))))
                     {
                         writer.WriteLine($"{n} {edges.Count}");
@@ -33,7 +35,7 @@ namespace DynamicTopoSort
 
         static void TestAlgo(TopoSortAlgoBase algo)
         {
-            for (int i = 1; i <= 100; i++)
+            for (int i = 1; i <= 40; i++)
             {
                 using (var reader = new StreamReader(new BufferedStream(new FileStream($"{i - 1:D2}.in", FileMode.Open))))
                 {
@@ -73,19 +75,9 @@ namespace DynamicTopoSort
             }
         }
 
-        static void TestPkAlgo()
-        {
-            TestAlgo(new PkAlgorithm());
-        }
-        
-        static void TestNaiveAlgo()
-        {
-            TestAlgo(new NaiveImplementation());
-        }
-
         static void Main(string[] args)
         {
-            TestNaiveAlgo();
+            TestAlgo(new PkAlgorithm());
         }
     }
 }

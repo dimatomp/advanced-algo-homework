@@ -18,7 +18,7 @@ namespace DynamicTopoSort
                 permutation[idx] = t;
             }
 
-            for (int i = rng.Next((int) Math.Min((long) n * (n - 1) / 2, 1000000)); i >= 0; i--)
+            for (int i = rng.Next((int) Math.Min((long) n * (n - 1) / 2, 100000)); i >= 0; i--)
             {
                 var x = rng.Next(n);
                 var y = rng.Next(n - 1);

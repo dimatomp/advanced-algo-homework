@@ -1,38 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using Node = DynamicTopoSort.PkAlgorithm.Node;
 
 namespace DynamicTopoSort
 {
-    static class NaiveImplementation
+    class NaiveImplementation: TopoSortAlgoBase
     {
-        private static void TopoSort(Node cur, Dictionary<Node, bool> states, IList<Node> result)
+        private readonly Dictionary<Node, bool> _states = new Dictionary<Node, bool>();
+
+        private void TopoSort(Node cur)
         {
-            if (states.TryGetValue(cur, out var b))
+            if (_states.TryGetValue(cur, out var b))
             {
                 if (!b)
                     throw new InvalidOperationException("A cycle has been encountered");
                 return;
             }
 
-            states[cur] = false;
+            _states[cur] = false;
             for (var i = 0; i < cur.Outgoing.Count; i++)
-                TopoSort(cur.Outgoing[i], states, result);
-            states[cur] = true;
-            result.Append(cur);
+                TopoSort(cur.Outgoing[i]);
+            _states[cur] = true;
+            SortedNodes.Add(cur);
         }
 
-        public static List<Node> AddEdge(List<Node> nodes, Node src, Node dest)
+        public override List<Node> SortedNodes { get; } = new List<Node>();
+
+        public override void AddEdge(Node src, Node dest)
         {
-            var nAnswer = new List<Node>();
-            var states = new Dictionary<Node, bool>();
             src.Outgoing.Add(dest);
             dest.Incoming.Add(src);
+            _states.Clear();
+            SortedNodes.Clear();
             try
             {
-                for (var i = 0; i < nodes.Count; i++)
-                    TopoSort(nodes[i], states, nAnswer);
+                for (var i = 0; i < Nodes.Count; i++)
+                    TopoSort(Nodes[i]);
             }
             catch
             {
@@ -41,10 +43,9 @@ namespace DynamicTopoSort
                 throw;
             }
 
-            nAnswer.Reverse();
-            for (int i = 0; i < nAnswer.Count; i++)
-                nAnswer[i].Index = i;
-            return nAnswer;
+            SortedNodes.Reverse();
+            for (int i = 0; i < SortedNodes.Count; i++)
+                SortedNodes[i].Index = i;
         }
     }
 }

@@ -30,15 +30,14 @@ namespace DynamicTopoSort
             //Task.WaitAll(tasks.ToArray());
         }
 
-        static void TestAlgo(Func<List<PkAlgorithm.Node>, PkAlgorithm.Node, PkAlgorithm.Node, List<PkAlgorithm.Node>> sort)
+        static void TestAlgo(TopoSortAlgoBase algo)
         {
             for (int i = 1; i <= 100; i++)
             {
                 using (var reader = new StreamReader(new BufferedStream(new FileStream($"{i - 1:D2}.in", FileMode.Open))))
                 {
                     var nm = reader.ReadLine().Split().Select(int.Parse).ToArray();
-                    var graph = PkAlgorithm.InitGraph(nm[0]);
-                    var nodes = graph.ToList();
+                    algo.InitGraph(nm[0]);
                     var input = Enumerable.Range(0, nm[1])
                         .Select(j => reader.ReadLine().Split().Select(int.Parse).ToArray()).ToList();
                     var totalTime = new TimeSpan();
@@ -46,18 +45,18 @@ namespace DynamicTopoSort
                     for (int j = 0; j < nm[1] - 1; j++)
                     {
                         time = DateTime.Now;
-                        graph = sort(graph, nodes[input[j][0]], nodes[input[j][1]]);
+                        algo.AddEdge(algo.Nodes[input[j][0]], algo.Nodes[input[j][1]]);
                         totalTime += DateTime.Now - time;
-                        foreach (var node in nodes)
-                            foreach (var outgoing in node.Outgoing)
-                                Debug.Assert(node.Index < outgoing.Index);
+                        //foreach (var node in nodes)
+                        //    foreach (var outgoing in node.Outgoing)
+                        //        Debug.Assert(node.Index < outgoing.Index);
                     }
 
                     bool ok = false;
                     time = DateTime.Now;
                     try
                     {
-                        sort(graph, nodes[input[nm[1] - 1][0]], nodes[input[nm[1] - 1][1]]);
+                        algo.AddEdge(algo.Nodes[input[nm[1] - 1][0]], algo.Nodes[input[nm[1] - 1][1]]);
                     }
                     catch (InvalidOperationException)
                     {
@@ -75,21 +74,17 @@ namespace DynamicTopoSort
 
         static void TestPkAlgo()
         {
-            TestAlgo((list, from, to) =>
-            {
-                PkAlgorithm.AddEdge(list, from, to);
-                return list;
-            });
+            TestAlgo(new PkAlgorithm());
         }
         
         static void TestNaiveAlgo()
         {
-            TestAlgo(NaiveImplementation.AddEdge);
+            TestAlgo(new NaiveImplementation());
         }
 
         static void Main(string[] args)
         {
-            TestNaiveAlgo();
+            TestPkAlgo();
         }
     }
 }

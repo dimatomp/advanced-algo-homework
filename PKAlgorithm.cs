@@ -4,38 +4,8 @@ using System.Linq;
 
 namespace DynamicTopoSort
 {
-    public static class PkAlgorithm
+    public class PkAlgorithm : TopoSortAlgoBase
     {
-        public class Node
-        {
-            public readonly IList<Node> Outgoing = new List<Node>();
-            public readonly IList<Node> Incoming = new List<Node>();
-            public int Number;
-            public int Index;
-        }
-
-        private static IEnumerable<int> Merge(IList<Node> a, IList<Node> b) 
-        {
-            int f = 0, s = 0;
-            while (f < a.Count && s < b.Count) 
-            {
-                if (a[f].Index < b[s].Index) 
-                {
-                    yield return a[f].Index;
-                    f++;
-                } 
-                else 
-                {
-                    yield return b[s].Index;
-                    s++;
-                }
-            }
-            for (; f < a.Count; f++)
-                yield return a[f].Index;
-            for (; s < b.Count; s++)
-                yield return b[s].Index;
-        }
-
         private static void Dfs(Node cur, HashSet<Node> visited, Func<Node, IList<Node>> edges, int fromIndex, int toIndex) 
         {
             if (cur.Index < fromIndex || cur.Index > toIndex || visited.Contains(cur))
@@ -45,12 +15,15 @@ namespace DynamicTopoSort
                 Dfs(next, visited, edges, fromIndex, toIndex);
         }
 
-        public static IList<Node> InitGraph(int nVertices) 
-        {
-            return Enumerable.Range(0, nVertices).Select(i => new Node {Number = i, Index = i}).ToList();
-        }
+        private readonly HashSet<Node> _deltaPlus = new HashSet<Node>();
+        private readonly HashSet<Node> _deltaMinus = new HashSet<Node>();
+        private readonly List<Node> _deltaPlusList = new List<Node>();
+        private readonly List<Node> _deltaMinusList = new List<Node>();
+        private readonly List<int> _merged = new List<int>();
 
-        public static void AddEdge(IList<Node> topoSort, Node src, Node dest) 
+        public override List<Node> SortedNodes => Nodes;
+
+        public override void AddEdge(Node src, Node dest) 
         {
             if (src.Index < dest.Index) 
             {
@@ -58,28 +31,48 @@ namespace DynamicTopoSort
                 dest.Incoming.Add(src);
                 return;
             }
-            var deltaPlus = new HashSet<Node>();
-            Dfs(dest, deltaPlus, n => n.Outgoing, dest.Index, src.Index);
-            var deltaMinus = new HashSet<Node>();
-            Dfs(src, deltaMinus, n => n.Incoming, dest.Index, src.Index);
-            var deltaPlusList = deltaPlus.OrderBy(node => node.Index).ToList();
-            deltaPlus.IntersectWith(deltaMinus);
-            if (deltaPlus.Count > 0)
+            _deltaPlus.Clear();
+            Dfs(dest, _deltaPlus, n => n.Outgoing, dest.Index, src.Index);
+            _deltaMinus.Clear();
+            Dfs(src, _deltaMinus, n => n.Incoming, dest.Index, src.Index);
+            _deltaPlusList.Clear();
+            _deltaPlusList.AddRange(_deltaPlus.OrderBy(node => node.Index));
+            _deltaPlus.IntersectWith(_deltaMinus);
+            if (_deltaPlus.Count > 0)
                 throw new InvalidOperationException("The edge to be added would introduce a cycle");
             src.Outgoing.Add(dest);
             dest.Incoming.Add(src);
-            var deltaMinusList = deltaMinus.OrderBy(node => node.Index).ToList();
-            var merged = Merge(deltaMinusList, deltaPlusList).ToList();
-            var cEntry = 0;
-            foreach (var index in merged) 
+            _deltaMinusList.Clear();
+            _deltaMinusList.AddRange(_deltaMinus.OrderBy(node => node.Index));
+            _merged.Clear();
+            int f = 0, s = 0;
+            while (f < _deltaPlusList.Count && s < _deltaMinusList.Count) 
             {
-                var cNode = cEntry < deltaMinusList.Count ? deltaMinusList[cEntry] : deltaPlusList[cEntry - deltaMinusList.Count];
+                if (_deltaPlusList[f].Index < _deltaMinusList[s].Index) 
+                {
+                    _merged.Add(_deltaPlusList[f].Index);
+                    f++;
+                } 
+                else 
+                {
+                    _merged.Add(_deltaMinusList[s].Index);
+                    s++;
+                }
+            }
+            for (; f < _deltaPlusList.Count; f++)
+                _merged.Add(_deltaPlusList[f].Index);
+            for (; s < _deltaMinusList.Count; s++)
+                _merged.Add(_deltaMinusList[s].Index);
+            var cEntry = 0;
+            for (int q = 0; q < _merged.Count; q++)
+            {
+                var cNode = cEntry < _deltaMinusList.Count ? _deltaMinusList[cEntry] : _deltaPlusList[cEntry - _deltaMinusList.Count];
                 cEntry++;
-                topoSort[index] = cNode;
+                SortedNodes[_merged[q]] = cNode;
             }
 
-            foreach (var index in merged)
-                topoSort[index].Index = index;
+            for (int q = 0; q < _merged.Count; q++)
+                SortedNodes[_merged[q]].Index = _merged[q];
         } 
     }
 }

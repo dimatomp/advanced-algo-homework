@@ -21,10 +21,10 @@ namespace DynamicTopoSort
         private readonly List<Node> _deltaMinusList = new List<Node>();
         private readonly List<int> _merged = new List<int>();
 
-        public override List<Node> SortedNodes => Nodes;
-
-        public override void AddEdge(Node src, Node dest) 
+        public override void AddEdge(Node src, Node dest)
         {
+            for (; SortedNodes.Count < Nodes.Count;)
+                SortedNodes.Add(Nodes[SortedNodes.Count]);
             if (src.Index < dest.Index) 
             {
                 src.Outgoing.Add(dest);

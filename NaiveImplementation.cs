@@ -23,8 +23,6 @@ namespace DynamicTopoSort
             SortedNodes.Add(cur);
         }
 
-        public override List<Node> SortedNodes { get; } = new List<Node>();
-
         public override void AddEdge(Node src, Node dest)
         {
             src.Outgoing.Add(dest);

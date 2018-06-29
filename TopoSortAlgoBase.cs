@@ -19,9 +19,14 @@ namespace DynamicTopoSort
             public readonly IList<Node> Incoming = new List<Node>();
             public int Number;
             public int Index;
+
+            public override string ToString()
+            {
+                return $"Number: {Number}, Index: {Index}";
+            }
         }
 
-        public abstract List<Node> SortedNodes { get; }
+        public readonly List<Node> SortedNodes = new List<Node>();
         public abstract void AddEdge(Node src, Node dest);
     }
 }

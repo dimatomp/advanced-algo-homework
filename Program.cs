@@ -17,10 +17,11 @@ namespace DynamicTopoSort
                 var i = q;
                 //tasks.Add(Task.Run(() =>
                 //{
-                    var edges = TestGen.GenerateTest(i * 1000).ToList();
+                    var n = i * 10;
+                    var edges = TestGen.GenerateTest(n).ToList();
                     using (var writer = new StreamWriter(new BufferedStream(new FileStream($"{i - 1:D2}.in", FileMode.Create))))
                     {
-                        writer.WriteLine($"{i * 1000} {edges.Count}");
+                        writer.WriteLine($"{n} {edges.Count}");
                         for (int j = 0; j < edges.Count; j++)
                             writer.WriteLine($"{edges[j].Item1} {edges[j].Item2}");
                     }
@@ -84,7 +85,7 @@ namespace DynamicTopoSort
 
         static void Main(string[] args)
         {
-            TestPkAlgo();
+            TestNaiveAlgo();
         }
     }
 }
